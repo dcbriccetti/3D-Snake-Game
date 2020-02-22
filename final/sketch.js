@@ -3,7 +3,7 @@
 
 let food;
 let direction;
-let positions;
+let segments;
 let keyMappings;
 let arenaWidth;
 let cellWidth;
@@ -13,6 +13,28 @@ const CELLS_PER_DIMENSION = 20;
 const STARTING_NUM_SEGMENTS = 3;
 const MS_PER_MOVE = 1000;
 const SPEEDUP_FACTOR = 3;
+
+class Segment {
+  constructor(position, direction) {
+    this.position = position;
+    this.direction = direction;
+    this.width = cellWidth * 0.7;
+  }
+
+  draw() {
+    at(...this.position.array(), () => {
+      const quarter = TAU / 4;
+      if (this.direction.x) {
+        rotateZ(quarter);
+      } else if (this.direction.z) {
+        rotateZ(quarter);
+        rotateX(quarter);
+      }
+      const radius = this.width / 2;
+      cylinder(radius, this.width);
+    });
+  }
+}
 
 function setup() {
   const len = min(windowWidth, windowHeight - 50);
@@ -27,8 +49,7 @@ function setup() {
 function draw() {
   if (millis() > nextMoveTime) {
     moveSnake();
-    const doubleSpeed = keyIsDown(SHIFT);
-    nextMoveTime += doubleSpeed ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
+    nextMoveTime += keyIsDown(SHIFT) ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
   }
 
   moveCameraTo(-arenaWidth * 0.8, -arenaWidth * 0.8);
@@ -61,7 +82,8 @@ function setUpState() {
   direction = createVector(0, 0, 0);
   food = newFoodPosition();
   const h = cellWidth / 2;
-  positions = Array.from({length: STARTING_NUM_SEGMENTS}, (v, i) => createVector(-i * cellWidth + h, h, h));
+  segments = Array.from({length: STARTING_NUM_SEGMENTS}, (v, i) =>
+    new Segment(createVector(-i * cellWidth + h, h, h), createVector(1, 0, 0)));
 }
 
 function moveCameraTo(x, y) {
@@ -87,15 +109,15 @@ function newFoodPosition() {
 
 function moveSnake() {
   if (! direction.equals(zeroVector)) {
-    const newHead = p5.Vector.add(positions[0], p5.Vector.mult(direction, cellWidth));
-    if (newPositionWouldLeaveArena(newHead)) {
+    const newHeadPos = p5.Vector.add(segments[0].position, p5.Vector.mult(direction, cellWidth));
+    if (newPositionWouldLeaveArena(newHeadPos)) {
       setUpState();
     } else {
-      if (newHead.equals(food))
+      if (newHeadPos.equals(food))
         food = newFoodPosition();
       else
-        positions.pop(); // Discard last
-      positions.unshift(newHead); // Put new head on front
+        segments.pop(); // Discard last
+      segments.unshift(new Segment(newHeadPos, direction)); // Put new head on front
     }
   }
 }
@@ -110,6 +132,7 @@ function drawArena() {
   const halfCpd = CELLS_PER_DIMENSION / 2;
   for (let i = -halfCpd; i <= halfCpd; i++) {
     const v = i * cellWidth;
+    //    x₁  y₁  z₁  x₂  y₂  z₂
     line( h,  v,  h,  h,  v, -h);
     line( h,  h,  v,  h, -h,  v);
 
@@ -123,14 +146,13 @@ function drawArena() {
 
 function drawSnake() {
   stroke('black');
-  positions.forEach(pos => {
+  segments.forEach(segment => {
     fill('green');
-    const objWidth = cellWidth * 0.8;
-    at(...pos.array(), () => box(objWidth));
+    segment.draw();
 
     stroke(0, 255, 0, 60);
     fill(0, 255, 0, 60);
-    drawReferenceStructures(positions[0], objWidth);
+    drawReferenceStructures(segments[0].position, segments[0].width);
   })
 }
 
@@ -152,10 +174,12 @@ function drawReferenceStructures(pos, objWidth) {
   line(pos.x, pos.y, -half, pos.x, pos.y, pos.z);
 
   noStroke();
+  const w = objWidth;
+  const f = 0.1; // Length on flat dimension
   // x₁     y₁     z₁
-  at(half,  pos.y, pos.z, () => box(0.1,      objWidth, objWidth));
-  at(pos.x, half,  pos.z, () => box(objWidth, 0.1,      objWidth));
-  at(pos.x, pos.y, -half, () => box(objWidth, objWidth, 0.1));
+  at(half,  pos.y, pos.z, () => box(f, w, w));
+  at(pos.x, half,  pos.z, () => box(w, f, w));
+  at(pos.x, pos.y, -half, () => box(w, w, f));
 }
 
 function at(x, y, z, fn) {
