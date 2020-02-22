@@ -9,6 +9,7 @@ let arenaWidth;
 let cellWidth;
 let zeroVector;
 let nextMoveTime;
+let autoDriving = false;
 const CELLS_PER_DIMENSION = 20;
 const STARTING_NUM_SEGMENTS = 3;
 const MS_PER_MOVE = 1000;
@@ -48,11 +49,13 @@ function setup() {
 
 function draw() {
   if (millis() > nextMoveTime) {
+    if (autoDriving)
+      autoSetDirection();
     moveSnake();
-    nextMoveTime += keyIsDown(SHIFT) ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
+    nextMoveTime += autoDriving ? 0 : keyIsDown(SHIFT) ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
   }
 
-  moveCameraTo(-arenaWidth * 0.8, -arenaWidth * 0.8);
+  moveCameraTo(map(sin(frameCount / 50), -1, 1, 0, -arenaWidth * 0.8), -arenaWidth * 0.8);
   background(255);
   smooth();
   drawArena();
@@ -91,13 +94,18 @@ function moveCameraTo(x, y) {
 }
 
 function keyPressed() {
-  const requestedDir = keyMappings[key];
-  if (requestedDir) {
-    const oppositeOfCurrentDir = p5.Vector.mult(direction, -1);
-    if (!requestedDir.equals(oppositeOfCurrentDir)) {
-      direction = requestedDir;
-      if (!nextMoveTime)
-        nextMoveTime = millis();
+  if (key === 'a') {
+    if (autoDriving = !autoDriving)
+      nextMoveTime = millis();
+  } else {
+    const requestedDir = keyMappings[key];
+    if (requestedDir) {
+      const oppositeOfCurrentDir = p5.Vector.mult(direction, -1);
+      if (!requestedDir.equals(oppositeOfCurrentDir)) {
+        direction = requestedDir;
+        if (!nextMoveTime)
+          nextMoveTime = millis();
+      }
     }
   }
 }
@@ -108,7 +116,7 @@ function newFoodPosition() {
 }
 
 function moveSnake() {
-  if (! direction.equals(zeroVector)) {
+  if (autoDriving || !direction.equals(zeroVector)) {
     const newHeadPos = p5.Vector.add(segments[0].position, p5.Vector.mult(direction, cellWidth));
     if (newPositionWouldLeaveArena(newHeadPos)) {
       setUpState();
@@ -124,6 +132,15 @@ function moveSnake() {
 
 function newPositionWouldLeaveArena(pos) {
   return !pos.array().every(coord => abs(coord) < arenaWidth / 2);
+}
+
+function autoSetDirection() {
+  const to = p5.Vector.sub(segments[0].position, food).array();
+  const toAbs = to.map(n => abs(n));
+  const greatestDistanceAxis = toAbs.indexOf(max(toAbs));
+  const a = [0, 0, 0];
+  a[greatestDistanceAxis] = to[greatestDistanceAxis] > 0 ? -1 : 1;
+  direction = createVector(...a);
 }
 
 function drawArena() {
