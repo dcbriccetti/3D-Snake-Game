@@ -8,9 +8,11 @@ let keyMappings;
 let arenaWidth;
 let cellWidth;
 let zeroVector;
-const CELLS_PER_DIMENSION = 12;
+let nextMoveTime;
+const CELLS_PER_DIMENSION = 20;
 const STARTING_NUM_SEGMENTS = 3;
-const MOVES_PER_SECOND = 1;
+const MS_PER_MOVE = 1000;
+const SPEEDUP_FACTOR = 3;
 
 function setup() {
   const len = min(windowWidth, windowHeight - 50);
@@ -18,13 +20,16 @@ function setup() {
   zeroVector = createVector(0, 0, 0);
   arenaWidth = round(width * 0.5);
   cellWidth = round(arenaWidth / CELLS_PER_DIMENSION);
-  frameRate(MOVES_PER_SECOND);
   mapKeys();
   setUpState();
 }
 
 function draw() {
-  moveSnake();
+  if (millis() > nextMoveTime) {
+    moveSnake();
+    const doubleSpeed = keyIsDown(SHIFT);
+    nextMoveTime += doubleSpeed ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
+  }
 
   moveCameraTo(-arenaWidth * 0.8, -arenaWidth * 0.8);
   background(255);
@@ -67,8 +72,11 @@ function keyPressed() {
   const requestedDir = keyMappings[key];
   if (requestedDir) {
     const oppositeOfCurrentDir = p5.Vector.mult(direction, -1);
-    if (!requestedDir.equals(oppositeOfCurrentDir))
+    if (!requestedDir.equals(oppositeOfCurrentDir)) {
       direction = requestedDir;
+      if (!nextMoveTime)
+        nextMoveTime = millis();
+    }
   }
 }
 
@@ -83,7 +91,6 @@ function moveSnake() {
     if (newPositionWouldLeaveArena(newHead)) {
       setUpState();
     } else {
-      print(newHead, food);
       if (newHead.equals(food))
         food = newFoodPosition();
       else
