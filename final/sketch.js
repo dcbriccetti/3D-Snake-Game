@@ -10,16 +10,18 @@ let cellWidth;
 let zeroVector;
 let nextMoveTime;
 let autoDriving = false;
-const CELLS_PER_DIMENSION = 20;
+const CELLS_PER_DIMENSION = 11;
+const CELLS_RIGHT_OF_CENTER = (CELLS_PER_DIMENSION - 1) / 2;
 const STARTING_NUM_SEGMENTS = 3;
 const MS_PER_MOVE = 1000;
 const SPEEDUP_FACTOR = 3;
+let rightmostCellCenter;
 
 class Segment {
   constructor(position, direction) {
     this.position = position;
     this.direction = direction;
-    this.width = cellWidth * 0.7;
+    this.width = cellWidth * 0.9;
   }
 
   draw() {
@@ -31,8 +33,7 @@ class Segment {
         rotateZ(quarter);
         rotateX(quarter);
       }
-      const radius = this.width / 2;
-      cylinder(radius, this.width);
+      box(this.width);
     });
   }
 }
@@ -43,6 +44,7 @@ function setup() {
   zeroVector = createVector(0, 0, 0);
   arenaWidth = round(width * 0.5);
   cellWidth = round(arenaWidth / CELLS_PER_DIMENSION);
+  rightmostCellCenter = cellWidth * CELLS_RIGHT_OF_CENTER;
   mapKeys();
   setUpState();
 }
@@ -72,8 +74,8 @@ function mapKeys() {
   const away    = v( 0,  0, -1);
   const towards = v( 0,  0,  1);
   keyMappings = {
-    'Home':       away,
-    'End':        towards,
+    ',':       away,
+    'o':        towards,
     'ArrowLeft':  left,
     'ArrowRight': right,
     'ArrowUp':    up,
@@ -84,9 +86,8 @@ function mapKeys() {
 function setUpState() {
   direction = createVector(0, 0, 0);
   food = newFoodPosition();
-  const h = cellWidth / 2;
   segments = Array.from({length: STARTING_NUM_SEGMENTS}, (v, i) =>
-    new Segment(createVector(-i * cellWidth + h, h, h), createVector(1, 0, 0)));
+    new Segment(createVector(-i * cellWidth, 0, 0), createVector(1, 0, 0)));
 }
 
 function moveCameraTo(x, y) {
@@ -111,8 +112,9 @@ function keyPressed() {
 }
 
 function newFoodPosition() {
-  const coord = () => floor(random(0, CELLS_PER_DIMENSION) - CELLS_PER_DIMENSION / 2) * cellWidth + cellWidth / 2;
-  return createVector(coord(), coord(), coord());
+  const m = CELLS_RIGHT_OF_CENTER;
+  const c = () => round(random(-m, m)) * cellWidth;
+  return createVector(c(), c(), c());
 }
 
 function moveSnake() {
@@ -145,29 +147,52 @@ function autoSetDirection() {
 
 function drawArena() {
   stroke('gray');
-  const h = arenaWidth / 2;
-  const halfCpd = CELLS_PER_DIMENSION / 2;
-  for (let i = -halfCpd; i <= halfCpd; i++) {
-    const v = i * cellWidth;
-    //    x₁  y₁  z₁  x₂  y₂  z₂
-    line( h,  v,  h,  h,  v, -h);
-    line( h,  h,  v,  h, -h,  v);
+  const cMax = rightmostCellCenter + cellWidth / 2;
+  const cMin = -cMax;
 
-    line(-h,  h,  v,  h,  h,  v);
-    line( v,  h,  h,  v,  h, -h);
+  [
+    '⊤↑I', // Right  horizontal
+    '⊤I↑', //        vertical
+    'I↑⊥', // Back   horizontal
+    '↑I⊥', //        vertical
+    'I⊤↑', // Bottom “horizontal”
+    '↑⊤I'  //        “vertical”
+  ].forEach(codeSet => {
+    for (let v = cMin; v <= cMax; v += cellWidth) {
+      const coords = [0, 0, 0, 0, 0, 0];
 
-    line(-v, -h, -h, -v,  h, -h);
-    line(-h, -v, -h,  h, -v, -h);
-  }
+      codeSet.split('').forEach((code, i) => {
+        switch (code) {
+          case '⊤':
+            coords[i    ] =
+            coords[i + 3] = cMax;
+            break;
+          case '⊥':
+            coords[i    ] =
+            coords[i + 3] = cMin;
+            break;
+          case '↑':
+            coords[i    ] =
+            coords[i + 3] = v;
+            break;
+          case 'I':
+            coords[i    ] = cMin;
+            coords[i + 3] = cMax;
+            break;
+        }
+      });
+      line(...coords);
+    }
+  });
 }
 
 function drawSnake() {
-  stroke('black');
   segments.forEach(segment => {
-    fill('green');
+    stroke('gray');
+    fill(0, 255, 0, 70);
     segment.draw();
 
-    stroke(0, 255, 0, 60);
+    stroke(0, 255, 0);
     fill(0, 255, 0, 60);
     drawReferenceStructures(segments[0].position, segments[0].width);
   })
@@ -176,9 +201,9 @@ function drawSnake() {
 function drawFood() {
   stroke('black');
   fill('red');
-  at(...food.array(), () => box(cellWidth / 2));
+  at(...food.array(), () => box(cellWidth / 3));
 
-  stroke(255, 0, 0, 60);
+  stroke(255, 0, 0);
   fill(255, 0, 0, 60);
   drawReferenceStructures(food, cellWidth / 2);
 }
