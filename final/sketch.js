@@ -17,27 +17,6 @@ const MS_PER_MOVE = 1000;
 const SPEEDUP_FACTOR = 3;
 let rightmostCellCenter;
 
-class Segment {
-  constructor(position, direction) {
-    this.position = position;
-    this.direction = direction;
-    this.width = cellWidth * 0.9;
-  }
-
-  draw() {
-    at(...this.position.array(), () => {
-      const quarter = TAU / 4;
-      if (this.direction.x) {
-        rotateZ(quarter);
-      } else if (this.direction.z) {
-        rotateZ(quarter);
-        rotateX(quarter);
-      }
-      box(this.width);
-    });
-  }
-}
-
 function setup() {
   const len = min(windowWidth, windowHeight - 50);
   createCanvas(len, len, WEBGL);
@@ -87,7 +66,7 @@ function setUpState() {
   direction = createVector(0, 0, 0);
   food = newFoodPosition();
   segments = Array.from({length: STARTING_NUM_SEGMENTS}, (v, i) =>
-    new Segment(createVector(-i * cellWidth, 0, 0), createVector(1, 0, 0)));
+    createVector(-i * cellWidth, 0, 0));
 }
 
 function moveCameraTo(x, y) {
@@ -119,7 +98,7 @@ function newFoodPosition() {
 
 function moveSnake() {
   if (autoDriving || !direction.equals(zeroVector)) {
-    const newHeadPos = p5.Vector.add(segments[0].position, p5.Vector.mult(direction, cellWidth));
+    const newHeadPos = p5.Vector.add(segments[0], p5.Vector.mult(direction, cellWidth));
     if (newPositionWouldLeaveArena(newHeadPos)) {
       setUpState();
     } else {
@@ -127,7 +106,7 @@ function moveSnake() {
         food = newFoodPosition();
       else
         segments.pop(); // Discard last
-      segments.unshift(new Segment(newHeadPos, direction)); // Put new head on front
+      segments.unshift(newHeadPos); // Put new head on front
     }
   }
 }
@@ -137,7 +116,7 @@ function newPositionWouldLeaveArena(pos) {
 }
 
 function autoSetDirection() {
-  const to = p5.Vector.sub(segments[0].position, food).array();
+  const to = p5.Vector.sub(segments[0], food).array();
   const toAbs = to.map(n => abs(n));
   const greatestDistanceAxis = toAbs.indexOf(max(toAbs));
   const a = [0, 0, 0];
@@ -190,11 +169,12 @@ function drawSnake() {
   segments.forEach(segment => {
     stroke('gray');
     fill(0, 255, 0, 70);
-    segment.draw();
+    const segmentWidth = cellWidth * 0.9;
+    at(...segment.array(), () => box(segmentWidth));
 
     stroke(0, 255, 0);
     fill(0, 255, 0, 60);
-    drawReferenceStructures(segments[0].position, segments[0].width);
+    drawReferenceStructures(segments[0], segmentWidth);
   })
 }
 
