@@ -136,10 +136,11 @@ function drawArena() {
   const l = rightmostCellCenter + cellWidth / 2;
   const s = -l;
   const q = TAU / 4;
+
   [
-    [[l, 0, 0], 0, -q],
-    [[0, 0, s], 0,  0],
-    [[0, l, 0], q,  0],
+    [[0, 0, s], 0, 0],
+    [[l, 0, 0], 0, q],
+    [[0, l, 0], q, 0],
   ].forEach(xf => {
     const [pos, xRot, yRot] = xf;
     at(...pos, () => {
