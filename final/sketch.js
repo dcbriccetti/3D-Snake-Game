@@ -104,7 +104,7 @@ function newFoodPosition() {
 function moveSnake() {
   if (autoDriving || !direction.equals(zeroVector)) {
     const newHeadPos = p5.Vector.add(segments[0], p5.Vector.mult(direction, cellWidth));
-    if (newPositionWouldLeaveArena(newHeadPos)) {
+    if (collides(newHeadPos)) {
       setUpState();
     } else {
       if (newHeadPos.equals(food))
@@ -116,8 +116,10 @@ function moveSnake() {
   }
 }
 
-function newPositionWouldLeaveArena(pos) {
-  return !pos.array().every(coord => abs(coord) < arenaWidth / 2);
+function collides(pos) {
+  const inBounds = pos.array().every(coord => abs(coord) < arenaWidth / 2);
+  const collidesWithSelf = segments.find(segment => segment.equals(pos));
+  return collidesWithSelf || !inBounds;
 }
 
 function autoSetDirection() {
@@ -131,42 +133,23 @@ function autoSetDirection() {
 
 function drawArena() {
   stroke('gray');
-  const cMax = rightmostCellCenter + cellWidth / 2;
-  const cMin = -cMax;
-
+  const l = rightmostCellCenter + cellWidth / 2;
+  const s = -l;
+  const q = TAU / 4;
   [
-    '⊤↑I', // Right  horizontal
-    '⊤I↑', //        vertical
-    'I↑⊥', // Back   horizontal
-    '↑I⊥', //        vertical
-    'I⊤↑', // Bottom “horizontal”
-    '↑⊤I'  //        “vertical”
-  ].forEach(codeSet => {
-    for (let v = cMin; v <= cMax; v += cellWidth) {
-      const coords = [0, 0, 0, 0, 0, 0];
-
-      codeSet.split('').forEach((code, i) => {
-        switch (code) {
-          case '⊤':
-            coords[i    ] =
-            coords[i + 3] = cMax;
-            break;
-          case '⊥':
-            coords[i    ] =
-            coords[i + 3] = cMin;
-            break;
-          case '↑':
-            coords[i    ] =
-            coords[i + 3] = v;
-            break;
-          case 'I':
-            coords[i    ] = cMin;
-            coords[i + 3] = cMax;
-            break;
-        }
-      });
-      line(...coords);
-    }
+    [[l, 0, 0], 0, -q],
+    [[0, 0, s], 0,  0],
+    [[0, l, 0], q,  0],
+  ].forEach(xf => {
+    const [pos, xRot, yRot] = xf;
+    at(...pos, () => {
+      rotateX(xRot);
+      rotateY(yRot);
+      for (let v = s; v <= l; v += cellWidth) {
+        line(s, v, 0, l, v, 0);
+        line(v, s, 0, v, l, 0);
+      }
+    });
   });
 }
 
