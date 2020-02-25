@@ -189,19 +189,19 @@ function drawFood() {
 }
 
 function drawReferenceStructures(pos, objWidth) {
-  const half = arenaWidth / 2;
-  //   x₁     y₁     z₁     x₂     y₂     z₂
-  line(pos.x, pos.y, pos.z, half,  pos.y, pos.z);
-  line(pos.x, pos.y, pos.z, pos.x, half,  pos.z);
-  line(pos.x, pos.y, -half, pos.x, pos.y, pos.z);
+  const l = arenaWidth / 2; // Largest coordinate value
+  const s = -l; // Smallest
+  const {x, y, z} = pos;
+  line(x, y, z,  l, y, z);
+  line(x, y, z,  x, l, z);
+  line(x, y, z,  x, y, s);
 
   noStroke();
   const w = objWidth;
   const f = 0.1; // Length on flat dimension
-  // x₁     y₁     z₁
-  at(half,  pos.y, pos.z, () => box(f, w, w));
-  at(pos.x, half,  pos.z, () => box(w, f, w));
-  at(pos.x, pos.y, -half, () => box(w, w, f));
+  at(l, y, z, () => box(f, w, w));
+  at(x, l, z, () => box(w, f, w));
+  at(x, y, s, () => box(w, w, f));
 }
 
 function at(x, y, z, fn) {
