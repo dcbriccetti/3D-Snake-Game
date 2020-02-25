@@ -7,6 +7,7 @@ const STARTING_NUM_SEGMENTS = 3;
 const MS_PER_MOVE = 1000;
 const SPEEDUP_FACTOR = 3;
 let food;
+let foodImage;
 let direction;
 let segments;
 let keyMappings;
@@ -16,6 +17,10 @@ let zeroVector;
 let nextMoveTime;
 let autoDriving = false;
 let rightmostCellCenter;
+
+function preload() {
+  foodImage = loadImage('apple.png');
+}
 
 function setup() {
   const len = min(windowWidth, windowHeight - 50);
@@ -166,10 +171,10 @@ function drawArena() {
 }
 
 function drawSnake() {
+  const segmentWidth = cellWidth * 0.9;
   segments.forEach(segment => {
     stroke('gray');
     fill(0, 255, 0, 70);
-    const segmentWidth = cellWidth * 0.9;
     at(...segment.array(), () => box(segmentWidth));
 
     stroke(0, 255, 0);
@@ -179,13 +184,14 @@ function drawSnake() {
 }
 
 function drawFood() {
-  stroke('black');
-  fill('red');
-  at(...food.array(), () => box(cellWidth / 3));
+  noStroke();
+  texture(foodImage);
+  const itemWidth = cellWidth * 0.8;
+  at(...food.array(), () => box(itemWidth));
 
   stroke(255, 0, 0);
   fill(255, 0, 0, 60);
-  drawReferenceStructures(food, cellWidth / 2);
+  drawReferenceStructures(food, itemWidth);
 }
 
 function drawReferenceStructures(pos, objWidth) {
