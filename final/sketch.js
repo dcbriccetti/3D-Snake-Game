@@ -1,6 +1,11 @@
 // 3D Snake Program
 // Dave Briccetti
 
+const CELLS_PER_DIMENSION = 11;
+const CELLS_RIGHT_OF_CENTER = (CELLS_PER_DIMENSION - 1) / 2;
+const STARTING_NUM_SEGMENTS = 3;
+const MS_PER_MOVE = 1000;
+const SPEEDUP_FACTOR = 3;
 let food;
 let direction;
 let segments;
@@ -10,11 +15,6 @@ let cellWidth;
 let zeroVector;
 let nextMoveTime;
 let autoDriving = false;
-const CELLS_PER_DIMENSION = 11;
-const CELLS_RIGHT_OF_CENTER = (CELLS_PER_DIMENSION - 1) / 2;
-const STARTING_NUM_SEGMENTS = 3;
-const MS_PER_MOVE = 1000;
-const SPEEDUP_FACTOR = 3;
 let rightmostCellCenter;
 
 function setup() {
@@ -53,8 +53,8 @@ function mapKeys() {
   const away    = v( 0,  0, -1);
   const towards = v( 0,  0,  1);
   keyMappings = {
-    ',':       away,
-    'o':        towards,
+    'w':          away,
+    's':          towards,
     'ArrowLeft':  left,
     'ArrowRight': right,
     'ArrowUp':    up,
@@ -175,7 +175,7 @@ function drawSnake() {
     stroke(0, 255, 0);
     fill(0, 255, 0, 60);
     drawReferenceStructures(segments[0], segmentWidth);
-  })
+  });
 }
 
 function drawFood() {
