@@ -5,6 +5,7 @@ const CELLS_PER_DIMENSION = 11;
 const CELLS_RIGHT_OF_CENTER = (CELLS_PER_DIMENSION - 1) / 2;
 const STARTING_NUM_SEGMENTS = 3;
 const MS_PER_MOVE = 1000;
+const AUTO_MS_PER_MOVE = 100;
 const SPEEDUP_FACTOR = 3;
 let food;
 let foodImage;
@@ -38,7 +39,7 @@ function draw() {
     if (autoDriving)
       autoSetDirection();
     moveSnake();
-    nextMoveTime += autoDriving ? 0 : keyIsDown(SHIFT) ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
+    nextMoveTime += autoDriving ? AUTO_MS_PER_MOVE : keyIsDown(SHIFT) ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
   }
 
   moveCameraTo(map(sin(frameCount / 50), -1, 1, 0, -arenaWidth * 0.8), -arenaWidth * 0.8);
@@ -105,7 +106,7 @@ function moveSnake() {
   if (autoDriving || !direction.equals(zeroVector)) {
     const newHeadPos = p5.Vector.add(segments[0], p5.Vector.mult(direction, cellWidth));
     if (collides(newHeadPos)) {
-      setUpState();
+      noLoop();
     } else {
       if (newHeadPos.equals(food))
         food = newFoodPosition();
@@ -118,17 +119,49 @@ function moveSnake() {
 
 function collides(pos) {
   const inBounds = pos.array().every(coord => abs(coord) < arenaWidth / 2);
-  const collidesWithSelf = segments.find(segment => segment.equals(pos));
+  const collidesWithSelf = segments.some((segment, i) => i > 0 && segment.equals(pos));
   return collidesWithSelf || !inBounds;
 }
 
 function autoSetDirection() {
-  const to = p5.Vector.sub(segments[0], food).array();
-  const toAbs = to.map(n => abs(n));
-  const greatestDistanceAxis = toAbs.indexOf(max(toAbs));
-  const a = [0, 0, 0];
-  a[greatestDistanceAxis] = to[greatestDistanceAxis] > 0 ? -1 : 1;
-  direction = createVector(...a);
+  const head = segments[0];
+  const toFoodAxisDistances = p5.Vector.sub(food, head).array();
+  let newDir;
+
+  const validDirs = validMoveDirections(head);
+
+  for (let i = 0; i < 3; i++) {
+    const d = toFoodAxisDistances[i];
+    const a = [0, 0, 0];
+    a[i] = d / abs(d); // -1, 0, or 1
+    const candidateDir = createVector(...a);
+    if (validDirs.some(d => d.equals(candidateDir))) {
+      newDir = candidateDir;
+      break;
+    }
+  }
+  if (newDir)
+    direction = newDir;
+  else {
+    if (validDirs.length) {
+      direction = random(validDirs);
+    }
+  }
+}
+
+function validMoveDirections(head) {
+  const validDirs = [];
+  [-1, 1].forEach(n => {
+    for (let i = 0; i < 3; i++) {
+      const a = [0, 0, 0];
+      a[i] = n;
+      const candidateDir = createVector(...a);
+      const candidatePos = p5.Vector.add(head, p5.Vector.mult(candidateDir, cellWidth));
+      if (!collides(candidatePos))
+        validDirs.push(candidateDir);
+    }
+  });
+  return validDirs;
 }
 
 function drawArena() {
@@ -156,9 +189,9 @@ function drawArena() {
 
 function drawSnake() {
   const segmentWidth = cellWidth * 0.9;
-  segments.forEach(segment => {
+  segments.forEach((segment, i) => {
     stroke('gray');
-    fill(0, 255, 0, 70);
+    fill(i === 0 ? 255 : 0, 255, 0, 70);
     at(...segment.array(), () => box(segmentWidth));
 
     stroke(0, 255, 0);
