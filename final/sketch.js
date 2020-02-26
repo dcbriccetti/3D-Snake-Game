@@ -192,7 +192,7 @@ function drawSnake() {
   segments.forEach((segment, i) => {
     stroke('gray');
     fill(i === 0 ? 255 : 0, 255, 0, 70);
-    at(...segment.array(), () => box(segmentWidth));
+    at(...segment.array(), () => box(map(i, 0, segments.length, segmentWidth, segmentWidth * 0.5)));
 
     stroke(0, 255, 0);
     fill(0, 255, 0, 60);
