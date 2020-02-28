@@ -24,10 +24,10 @@ function preload() {
 }
 
 function setup() {
-  const len = min(windowWidth, windowHeight - 50);
+  const len = min(windowWidth - 10, windowHeight - 50);
   createCanvas(len, len, WEBGL);
   zeroVector = createVector(0, 0, 0);
-  arenaWidth = round(width * 0.5);
+  arenaWidth = round(width * 0.6);
   cellWidth = round(arenaWidth / CELLS_PER_DIMENSION);
   rightmostCellCenter = cellWidth * CELLS_RIGHT_OF_CENTER;
   mapKeys();
@@ -39,7 +39,8 @@ function draw() {
     if (autoDriving)
       autoSetDirection();
     moveSnake();
-    nextMoveTime += autoDriving ? AUTO_MS_PER_MOVE : keyIsDown(SHIFT) ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
+    const ms = autoDriving ? AUTO_MS_PER_MOVE : MS_PER_MOVE;
+    nextMoveTime += keyIsDown(SHIFT) ? ms / SPEEDUP_FACTOR : ms;
   }
 
   moveCameraTo(map(sin(frameCount / 50), -1, 1, 0, -arenaWidth * 0.8), -arenaWidth * 0.8);
@@ -106,7 +107,7 @@ function moveSnake() {
   if (autoDriving || !direction.equals(zeroVector)) {
     const newHeadPos = p5.Vector.add(segments[0], p5.Vector.mult(direction, cellWidth));
     if (collides(newHeadPos)) {
-      noLoop();
+      setUpState();
     } else {
       if (newHeadPos.equals(food))
         food = newFoodPosition();
@@ -152,10 +153,10 @@ function autoSetDirection() {
 function validMoveDirections(head) {
   const validDirs = [];
   [-1, 1].forEach(n => {
-    for (let i = 0; i < 3; i++) {
-      const a = [0, 0, 0];
-      a[i] = n;
-      const candidateDir = createVector(...a);
+    for (let axis = 0; axis < 3; axis++) {
+      const dirArray = [0, 0, 0];
+      dirArray[axis] = n;
+      const candidateDir = createVector(...dirArray);
       const candidatePos = p5.Vector.add(head, p5.Vector.mult(candidateDir, cellWidth));
       if (!collides(candidatePos))
         validDirs.push(candidateDir);
