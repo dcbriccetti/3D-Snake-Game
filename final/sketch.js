@@ -113,9 +113,9 @@ new p5(p => {
       if (collides(newHeadPos)) {
         setUpState();
       } else {
-        if (newHeadPos.equals(food))
+        if (newHeadPos.equals(food)) {
           food = newFoodPosition();
-        else
+        } else
           segments.pop(); // Discard last
         segments.unshift(newHeadPos); // Put new head on front
       }
@@ -129,44 +129,13 @@ new p5(p => {
   }
 
   function autoSetDirection() {
-    const head = segments[0];
-    const toFoodAxisDistances = p5.Vector.sub(food, head).array();
-    let newDir;
-
-    const validDirs = validMoveDirections(head);
-
-    for (let i = 0; i < 3; i++) {
-      const d = toFoodAxisDistances[i];
-      const a = [0, 0, 0];
-      a[i] = d / Math.abs(d); // -1, 0, or 1
-      const candidateDir = p.createVector(...a);
-      if (validDirs.some(d => d.equals(candidateDir))) {
-        newDir = candidateDir;
-        break;
-      }
+    const pf = new PathFinder(arenaWidth / 2, cellWidth);
+    const pathToFood = pf.findShortest(segments[0].array(), food.array(), segments.map(s => s.array()));
+    if (pathToFood) {
+      const dir = pathToFood.shift();
+      if (dir)
+        direction = p.createVector(...dir);
     }
-    if (newDir)
-      direction = newDir;
-    else {
-      if (validDirs.length) {
-        direction = p.random(validDirs);
-      }
-    }
-  }
-
-  function validMoveDirections(head) {
-    const validDirs = [];
-    [-1, 1].forEach(n => {
-      for (let axis = 0; axis < 3; axis++) {
-        const dirArray = [0, 0, 0];
-        dirArray[axis] = n;
-        const candidateDir = p.createVector(...dirArray);
-        const candidatePos = p5.Vector.add(head, p5.Vector.mult(candidateDir, cellWidth));
-        if (!collides(candidatePos))
-          validDirs.push(candidateDir);
-      }
-    });
-    return validDirs;
   }
 
   function drawArena() {
