@@ -1,26 +1,14 @@
-class MoveNode {
-  parent: MoveNode;
-  directionTo: number[];
-  position: number[];
+type Vector = number[];
 
-  constructor(parent: MoveNode, directionTo: number[], position: number[]) {
-    this.parent = parent;
-    this.directionTo = directionTo;
-    this.position = position;
-  }
+class MoveNode {
+  constructor(public parent: MoveNode, public directionTo: Vector, public position: Vector) {}
 }
 
 class PathFinder {
-  private readonly maxCoord: number;
-  private readonly cellWidth: number;
-
-  constructor(maxCoord: number, cellWidth: number) {
-    this.maxCoord = maxCoord;
-    this.cellWidth = cellWidth;
-  }
+  constructor(private readonly maxCoord: number, private readonly cellWidth: number) {}
 
   // Implements breadth-first search as presented at https://en.wikipedia.org/wiki/Breadth-first_search
-  findShortest(startPos: number[], endPos: number[], obstacles: number[][]): number[][] {
+  findShortest(startPos: Vector, endPos: Vector, obstacles: Vector[]): Vector[] {
     const s = obj => obj.toString();
     const q: MoveNode[] = [];
     const discovered: Set<string> = new Set();
@@ -52,8 +40,8 @@ class PathFinder {
     }
   }
 
-  pathTo(node: MoveNode): number[][] {
-    const path: number[][] = [];
+  pathTo(node: MoveNode): Vector[] {
+    const path: Vector[] = [];
     while (node) {
       const dt = node.directionTo;
       if (dt)
@@ -68,11 +56,11 @@ if (false) {
   const DIM_LEN = 5;
   const CELL_WIDTH = 20;
   const MAX_COORD = (DIM_LEN - 1) / 2;
-  let obstacles: number[][] = [
+  let obstacles: Vector[] = [
     [CELL_WIDTH, 0, 0],
     [1, -CELL_WIDTH, 0],
   ];
   const pf = new PathFinder(MAX_COORD * CELL_WIDTH, CELL_WIDTH);
-  const path: number[][] = pf.findShortest([0, 0, 0], [MAX_COORD * CELL_WIDTH, 0, 0], obstacles);
+  const path: Vector[] = pf.findShortest([0, 0, 0], [MAX_COORD * CELL_WIDTH, 0, 0], obstacles);
   console.log(path);
 }
