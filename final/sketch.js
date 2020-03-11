@@ -2,8 +2,8 @@
 // Dave Briccetti
 
 const STARTING_NUM_SEGMENTS = 3;
-const MS_PER_MOVE = 1000;
 const SPEEDUP_FACTOR = 3;
+let msPerMove = 1000;
 let cellsPerDimension = 11;
 let food;
 let direction;
@@ -17,7 +17,6 @@ let autoDriving = false;
 let rightmostCellCenter;
 let sliderCellsPerDimension;
 
-
 function setup() {
   const len = min(windowWidth, windowHeight - 50);
   createCanvas(len, len, WEBGL);
@@ -26,14 +25,7 @@ function setup() {
   resizeFromSlider();
   mapKeys();
   setUpState();
-  sliderCellsPerDimension = select('#numCells');
-  sliderCellsPerDimension.value(cellsPerDimension);
-
-  sliderCellsPerDimension.changed(() => {
-    cellsPerDimension = sliderCellsPerDimension.value();
-    resizeFromSlider();
-    setUpState();
-  });
+  createControls();
 }
 
 function draw() {
@@ -41,7 +33,7 @@ function draw() {
     if (autoDriving)
       autoSetDirection();
     moveSnake();
-    nextMoveTime += autoDriving ? 0 : keyIsDown(SHIFT) ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
+    nextMoveTime += autoDriving ? 0 : keyIsDown(SHIFT) ? msPerMove / SPEEDUP_FACTOR : msPerMove;
   }
 
   moveCameraTo(map(sin(frameCount / 50), -1, 1, 0, -arenaWidth * 0.8), -arenaWidth * 0.8);
@@ -50,6 +42,24 @@ function draw() {
   drawArena();
   drawSnake();
   drawFood();
+}
+
+function createControls() {
+  sliderCellsPerDimension = select('#numCells');
+  sliderCellsPerDimension.value(cellsPerDimension);
+
+  sliderCellsPerDimension.changed(() => {
+    cellsPerDimension = sliderCellsPerDimension.value();
+    resizeFromSlider();
+    setUpState();
+  });
+  
+  sliderMsPerMove = select('#msPerMove');
+  sliderMsPerMove.value(msPerMove);
+
+  sliderMsPerMove.changed(() => {
+    msPerMove = sliderMsPerMove.value();
+  });
 }
 
 function resizeFromSlider() {
