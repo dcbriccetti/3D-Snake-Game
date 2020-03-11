@@ -1,11 +1,10 @@
 // 3D Snake Program
 // Dave Briccetti
 
-const CELLS_PER_DIMENSION = 11;
-const CELLS_RIGHT_OF_CENTER = (CELLS_PER_DIMENSION - 1) / 2;
 const STARTING_NUM_SEGMENTS = 3;
 const MS_PER_MOVE = 1000;
 const SPEEDUP_FACTOR = 3;
+let cellsPerDimension = 11;
 let food;
 let direction;
 let segments;
@@ -16,16 +15,25 @@ let zeroVector;
 let nextMoveTime;
 let autoDriving = false;
 let rightmostCellCenter;
+let sliderCellsPerDimension;
+
 
 function setup() {
   const len = min(windowWidth, windowHeight - 50);
   createCanvas(len, len, WEBGL);
   zeroVector = createVector(0, 0, 0);
   arenaWidth = round(width * 0.5);
-  cellWidth = round(arenaWidth / CELLS_PER_DIMENSION);
-  rightmostCellCenter = cellWidth * CELLS_RIGHT_OF_CENTER;
+  resizeFromSlider();
   mapKeys();
   setUpState();
+  sliderCellsPerDimension = select('#numCells');
+  sliderCellsPerDimension.value(cellsPerDimension);
+
+  sliderCellsPerDimension.changed(() => {
+    cellsPerDimension = sliderCellsPerDimension.value();
+    resizeFromSlider();
+    setUpState();
+  });
 }
 
 function draw() {
@@ -43,6 +51,13 @@ function draw() {
   drawSnake();
   drawFood();
 }
+
+function resizeFromSlider() {
+  cellWidth = round(arenaWidth / cellsPerDimension);
+  rightmostCellCenter = cellWidth * cellsRightOfCenter();
+}
+
+let cellsRightOfCenter = () => (cellsPerDimension - 1) / 2;
 
 function mapKeys() {
   const v = createVector;
@@ -91,7 +106,7 @@ function keyPressed() {
 }
 
 function newFoodPosition() {
-  const m = CELLS_RIGHT_OF_CENTER;
+  const m = cellsRightOfCenter();
   const c = () => round(random(-m, m)) * cellWidth;
   return createVector(c(), c(), c());
 }
