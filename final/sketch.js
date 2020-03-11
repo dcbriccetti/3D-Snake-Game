@@ -2,12 +2,11 @@
 // Dave Briccetti
 
 new p5(p => {
-  const CELLS_PER_DIMENSION = 11;
-  const CELLS_RIGHT_OF_CENTER = (CELLS_PER_DIMENSION - 1) / 2;
   const STARTING_NUM_SEGMENTS = 3;
-  const MS_PER_MOVE = 1000;
   const AUTO_MS_PER_MOVE = 100;
   const SPEEDUP_FACTOR = 3;
+  let cellsPerDimension = 11;
+  let msPerMove = 1000;
   let food;
   let foodImage;
   let direction;
@@ -19,6 +18,7 @@ new p5(p => {
   let nextMoveTime;
   let autoDriving = false;
   let rightmostCellCenter;
+  let sliderCellsPerDimension;
 
   p.preload = () => {
     foodImage = p.loadImage('apple.png');
@@ -29,10 +29,10 @@ new p5(p => {
     p.createCanvas(len, len, p.WEBGL);
     zeroVector = p.createVector(0, 0, 0);
     arenaWidth = p.round(p.width * 0.6);
-    cellWidth = p.round(arenaWidth / CELLS_PER_DIMENSION);
-    rightmostCellCenter = cellWidth * CELLS_RIGHT_OF_CENTER;
+    resizeFromSlider();
     mapKeys();
     setUpState();
+    createControls();
   };
 
   p.draw = () => {
@@ -40,7 +40,7 @@ new p5(p => {
       if (autoDriving)
         autoSetDirection();
       moveSnake();
-      const ms = autoDriving ? AUTO_MS_PER_MOVE : MS_PER_MOVE;
+      const ms = autoDriving ? AUTO_MS_PER_MOVE : msPerMove;
       nextMoveTime += p.keyIsDown(p.SHIFT) ? ms / SPEEDUP_FACTOR : ms;
     }
 
@@ -76,6 +76,31 @@ new p5(p => {
     p.camera(camX, camY, camZ,  0, 0, 0,  0, 1, 0);
   }
 
+  function createControls() {
+    sliderCellsPerDimension = p.select('#numCells');
+    sliderCellsPerDimension.value(cellsPerDimension);
+
+    sliderCellsPerDimension.changed(() => {
+      cellsPerDimension = sliderCellsPerDimension.value();
+      resizeFromSlider();
+      setUpState();
+    });
+
+    sliderMsPerMove = p.select('#msPerMove');
+    sliderMsPerMove.value(msPerMove);
+
+    sliderMsPerMove.changed(() => {
+      msPerMove = sliderMsPerMove.value();
+    });
+  }
+
+  function resizeFromSlider() {
+    cellWidth = p.round(arenaWidth / cellsPerDimension);
+    rightmostCellCenter = cellWidth * cellsRightOfCenter();
+  }
+
+  let cellsRightOfCenter = () => (cellsPerDimension - 1) / 2;
+
   function mapKeys() {
     const v = p.createVector;
     const up      = v( 0, -1,  0);
@@ -94,15 +119,15 @@ new p5(p => {
     };
   }
 
-  function setUpState() {
-    direction = p.createVector(0, 0, 0);
-    food = newFoodPosition();
-    segments = Array.from({length: STARTING_NUM_SEGMENTS}, (v, i) =>
-      p.createVector(-i * cellWidth, 0, 0));
-  }
+    function setUpState() {
+      direction = p.createVector(0, 0, 0);
+      food = newFoodPosition();
+      segments = Array.from({length: STARTING_NUM_SEGMENTS}, (v, i) =>
+        p.createVector(-i * cellWidth, 0, 0));
+    }
 
   function newFoodPosition() {
-    const m = CELLS_RIGHT_OF_CENTER;
+    const m = cellsRightOfCenter();
     const c = () => p.round(p.random(-m, m)) * cellWidth;
     return p.createVector(c(), c(), c());
   }
