@@ -1,6 +1,8 @@
 // 3D Snake Program
 // Dave Briccetti
 
+declare const p5;
+
 new p5(p => {
   const STARTING_NUM_SEGMENTS = 3;
   const AUTO_MS_PER_MOVE = 100;
@@ -18,7 +20,6 @@ new p5(p => {
   let nextMoveTime;
   let autoDriving = false;
   let rightmostCellCenter;
-  let sliderCellsPerDimension;
 
   p.preload = () => {
     foodImage = p.loadImage('apple.png');
@@ -77,7 +78,7 @@ new p5(p => {
   }
 
   function createControls() {
-    sliderCellsPerDimension = p.select('#numCells');
+    const sliderCellsPerDimension = p.select('#numCells');
     sliderCellsPerDimension.value(cellsPerDimension);
 
     sliderCellsPerDimension.changed(() => {
@@ -86,7 +87,7 @@ new p5(p => {
       setUpState();
     });
 
-    sliderMsPerMove = p.select('#msPerMove');
+    const sliderMsPerMove = p.select('#msPerMove');
     sliderMsPerMove.value(msPerMove);
 
     sliderMsPerMove.changed(() => {
@@ -206,7 +207,7 @@ new p5(p => {
       [[0, l, 0], q, 0],
     ].forEach(xf => {
       const [pos, xRot, yRot] = xf;
-      at(...pos, () => {
+      at(<Number[]>pos, () => {
         p.rotateX(xRot);
         p.rotateY(yRot);
         for (let v = s; v <= l; v += cellWidth) {
@@ -222,7 +223,7 @@ new p5(p => {
     segments.forEach((segment, i) => {
       p.stroke('gray');
       p.fill(i === 0 ? 255 : 0, 255, 0, 70);
-      at(...segment.array(), () => p.box(p.map(i, 0, segments.length, segmentWidth, segmentWidth * 0.5)));
+      at(segment.array(), () => p.box(p.map(i, 0, segments.length, segmentWidth, segmentWidth * 0.5)));
 
       p.stroke(0, 255, 0);
       p.fill(0, 255, 0, 60);
@@ -234,7 +235,7 @@ new p5(p => {
     p.noStroke();
     p.texture(foodImage);
     const itemWidth = cellWidth * 0.8;
-    at(...food.array(), () => p.box(itemWidth));
+    at(food.array(), () => p.box(itemWidth));
 
     p.stroke(255, 0, 0);
     p.fill(255, 0, 0, 60);
@@ -252,14 +253,14 @@ new p5(p => {
     p.noStroke();
     const w = objWidth;
     const f = 0.1; // Length on flat dimension
-    at(l, y, z, () => p.box(f, w, w));
-    at(x, l, z, () => p.box(w, f, w));
-    at(x, y, s, () => p.box(w, w, f));
+    at([l, y, z], () => p.box(f, w, w));
+    at([x, l, z], () => p.box(w, f, w));
+    at([x, y, s], () => p.box(w, w, f));
   }
 
-  function at(x, y, z, fn) {
+  function at(point: Number[], fn: () => void) {
     p.push();
-    p.translate(x, y, z);
+    p.translate(...point);
     fn();
     p.pop();
   }
