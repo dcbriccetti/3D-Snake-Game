@@ -1,8 +1,9 @@
 function makeAt(p) {
-  return (point: Number[], fn: () => void) => {
+  const at = (point: Number[], fn: () => void) => {
     p.push();
     p.translate(...point);
     fn();
     p.pop();
   };
+  return at;
 }

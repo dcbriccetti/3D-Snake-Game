@@ -16,8 +16,8 @@ new p5(p => {
     [255, 0, 255],
   ];
   let cellsPerDimension = 11;
-  let msPerMove = 1000;
-  let msPerAutoMove = 100;
+  let msPerMove: number;
+  let msPerAutoMove: number;
   let food;
   let foodImage;
   let keyMappings;
@@ -27,7 +27,8 @@ new p5(p => {
   let autoDriving = false;
   let rightmostCellCenter;
   let at;
-  const snakes: Snake[] = [];
+  let numSnakes: number;
+  let snakes: Snake[];
 
 
   p.preload = () => {
@@ -41,20 +42,20 @@ new p5(p => {
     arenaWidth = p.round(p.width * 0.6);
     resizeFromSlider();
     mapKeys();
-    for (let i = 0; i < 5; i++) {
-      snakes.push(new Snake(p, i, arenaWidth, () => cellWidth, STARTING_NUM_SEGMENTS));
-    }
     setUpState();
     createControls();
   };
 
   p.draw = () => {
-    if (p.millis() > nextMoveTime) {
+    const now = p.millis();
+    const msPastNextMoveTime = now - nextMoveTime;
+    if (msPastNextMoveTime > 0) {
       if (autoDriving)
         snakes.forEach(s => s.autoSetDirection(snakes, food));
       snakes.forEach(s => s.move(autoDriving, snakes, food, () => s.die(), (foundFood) => food = newFoodPosition()));
       const ms = autoDriving ? msPerAutoMove : msPerMove;
-      nextMoveTime += p.keyIsDown(p.SHIFT) ? ms / SPEEDUP_FACTOR : ms;
+      const adjustedMs = p.keyIsDown(p.SHIFT) ? ms / SPEEDUP_FACTOR : ms;
+      nextMoveTime = p.max(now, now + adjustedMs - msPastNextMoveTime);
     }
 
     positionCamera();
@@ -115,6 +116,16 @@ new p5(p => {
 
     sliderAutoSpeed.changed(() => setMsPerMoveFromAutoSlider());
     setMsPerMoveFromAutoSlider();
+
+    const sliderNumSnakes = p.select('#numSnakes');
+
+    function setNumSnakesFromAutoSlider() {
+      numSnakes = sliderNumSnakes.value();
+      setUpState();
+    }
+
+    sliderNumSnakes.changed(() => setNumSnakesFromAutoSlider());
+    setNumSnakesFromAutoSlider();
   }
 
   function resizeFromSlider() {
@@ -143,7 +154,8 @@ new p5(p => {
   }
 
     function setUpState() {
-      snakes.forEach(s => s.setUp(STARTING_NUM_SEGMENTS));
+      snakes = Array.from({length: numSnakes}, (v, i) =>
+        new Snake(p, i, arenaWidth, () => cellWidth, STARTING_NUM_SEGMENTS));
       food = newFoodPosition();
     }
 
