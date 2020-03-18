@@ -17,7 +17,8 @@
             position: absolute;
             background-color: rgba(0, 0, 0, 0.3);
             margin: .3em;
-            padding: .2em;
+            padding-left: .5em;
+            padding-right: .5em;
         }
     </style>
 </head>
@@ -26,6 +27,12 @@
     <script src="snake.js"></script>
     <script src="sketch.js"></script>
     <div id ='controls'>
+        <h3>3D Snake Game Work in Progress, by <a href="https://davebsoft.com">Dave Briccetti</a></h3>
+        <p>Use the arrow keys for up, down, left, right, and w for away and s for towards. <br/>
+            To start, click in the game area (so your keystrokes are directed there) and press a key.
+        <br/>Hold down shift for a temporary speed boost. Play by youself or add more snakes.</p>
+        <p><a href="https://www.youtube.com/playlist?list=PLBB4Hl2loxIcmqqdFH3TrNfpIZHlyvMMK">Video lessons</a>,
+        <a href="https://github.com/dcbriccetti/3D-Snake-Game">Source code</a></p>
         <table>
             <tr>
                 <td>
@@ -37,18 +44,10 @@
             </tr>
             <tr>
                 <td>
-                    <label for="manualSpeed" class="label">Speed</label>
+                    <label for="speed" class="label">Speed</label>
                 </td>
                 <td>
-                    <input id="manualSpeed" type="range" min="1" max="50" step="1" value="40">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <label for="autoSpeed" class="label">Auto Speed</label>
-                </td>
-                <td>
-                    <input id="autoSpeed" type="range" min="1" max="50" step="1" value="25">
+                    <input id="speed" type="range" min="1" max="50" step="1" value="35">
                 </td>
             </tr>
             <tr>
@@ -56,7 +55,7 @@
                     <label for="numSnakes" class="label">Snakes</label>
                 </td>
                 <td>
-                    <input id="numSnakes" type="range" min="1" max="5" value="1">
+                    <input id="numSnakes" type="range" min="1" max="11" value="1">
                 </td>
             </tr>
         </table>

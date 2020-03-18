@@ -1,5 +1,4 @@
 // 3D Snake Game
-// Lesson Ten: Adding User Interface Sliders
 
 declare const p5;
 
@@ -7,29 +6,26 @@ new p5(p => {
   const STARTING_NUM_SEGMENTS = 3;
   const SPEEDUP_FACTOR = 3;
   const SNAKE_RGBS = [
-    [255, 0, 0],
-    [255, 128, 0],
-    [255, 255, 0],
     [0, 255, 0],
     [0, 255, 255],
     [0, 0, 255],
     [255, 0, 255],
+    [255, 0, 0],
+    [255, 128, 0],
+    [255, 255, 0],
   ];
   let cellsPerDimension = 11;
   let msPerMove: number;
-  let msPerAutoMove: number;
   let food;
   let foodImage;
   let keyMappings;
   let arenaWidth;
   let cellWidth;
   let nextMoveTime;
-  let autoDriving = false;
   let rightmostCellCenter;
   let at;
   let numSnakes: number;
   let snakes: Snake[];
-
 
   p.preload = () => {
     foodImage = p.loadImage('apple.png');
@@ -50,11 +46,12 @@ new p5(p => {
     const now = p.millis();
     const msPastNextMoveTime = now - nextMoveTime;
     if (msPastNextMoveTime > 0) {
-      if (autoDriving)
-        snakes.forEach(s => s.autoSetDirection(snakes, food));
-      snakes.forEach(s => s.move(autoDriving, snakes, food, () => s.die(), (foundFood) => food = newFoodPosition()));
-      const ms = autoDriving ? msPerAutoMove : msPerMove;
-      const adjustedMs = p.keyIsDown(p.SHIFT) ? ms / SPEEDUP_FACTOR : ms;
+      snakes.forEach(s => {
+        if (s.autoDriving)
+          s.autoSetDirection(snakes, food);
+        s.move(snakes, food, () => s.die(), (foundFood) => food = newFoodPosition())
+      });
+      const adjustedMs = p.keyIsDown(p.SHIFT) ? msPerMove / SPEEDUP_FACTOR : msPerMove;
       nextMoveTime = p.max(now, now + adjustedMs - msPastNextMoveTime);
     }
 
@@ -67,10 +64,10 @@ new p5(p => {
   };
 
   p.keyPressed = () => {
-    if (p.key === 'a') {
-      if (autoDriving = !autoDriving)
-        nextMoveTime = p.millis();
+    if (p.key === 'A') {
+      snakes.forEach(s => s.autoDriving = true);
     } else {
+      snakes.forEach((s, i) => {if (i > 0) s.autoDriving = true;});
       const requestedDir = keyMappings[p.key];
       if (requestedDir) {
         const oppositeOfCurrentDir = p5.Vector.mult(snakes[0].direction, -1);
@@ -99,23 +96,14 @@ new p5(p => {
       setUpState();
     });
 
-    const sliderManualSpeed = p.select('#manualSpeed');
+    const sliderManualSpeed = p.select('#speed');
 
     function setMsPerMoveFromSlider() {
-      msPerMove = p.map(sliderManualSpeed.value(), 1, 50, 5000, 100);
+      msPerMove = p.map(sliderManualSpeed.value(), 1, 50, 3000, 0);
     }
 
     sliderManualSpeed.changed(() => setMsPerMoveFromSlider());
     setMsPerMoveFromSlider();
-
-    const sliderAutoSpeed = p.select('#autoSpeed');
-
-    function setMsPerMoveFromAutoSlider() {
-      msPerAutoMove = p.map(sliderAutoSpeed.value(), 1, 50, 1000, 0);
-    }
-
-    sliderAutoSpeed.changed(() => setMsPerMoveFromAutoSlider());
-    setMsPerMoveFromAutoSlider();
 
     const sliderNumSnakes = p.select('#numSnakes');
 
@@ -146,6 +134,8 @@ new p5(p => {
     keyMappings = {
       'w':          away,
       's':          towards,
+      'Home':       away,
+      'End':        towards,
       'ArrowLeft':  left,
       'ArrowRight': right,
       'ArrowUp':    up,
@@ -155,7 +145,7 @@ new p5(p => {
 
     function setUpState() {
       snakes = Array.from({length: numSnakes}, (v, i) =>
-        new Snake(p, i, arenaWidth, () => cellWidth, STARTING_NUM_SEGMENTS));
+        new Snake(p, i, arenaWidth, () => cellWidth, cellsPerDimension, STARTING_NUM_SEGMENTS));
       food = newFoodPosition();
     }
 

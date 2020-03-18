@@ -3,21 +3,27 @@ class Snake {
   private readonly snakeIndex: number;
   private readonly arenaWidth: number;
   private readonly cellWidth: () => number;
+  private readonly cellsPerDimension: number;
   private readonly zeroVector: any;
   private readonly at: (point: Number[], fn: () => void) => void;
   public direction: any;
   public segments: any[];
   private readonly moveOrder: number;
   public alive = true;
+  public autoDriving: boolean;
 
-  constructor(p, snakeIndex: number, arenaWidth: number, cellWidth: () => number, startingNumSegments: number) {
+  constructor(p, snakeIndex: number, arenaWidth: number, cellWidth: () => number, cellsPerDimension: number, startingNumSegments: number) {
     this.p = p;
     this.snakeIndex = snakeIndex;
     this.arenaWidth = arenaWidth;
     this.cellWidth = cellWidth;
+    this.cellsPerDimension = cellsPerDimension;
     this.zeroVector = p.createVector(0, 0, 0);
     this.at = makeAt(p);
-    this.setUp(startingNumSegments);
+    this.alive = true;
+    this.direction = this.p.createVector(0, 0, 0);
+    this.segments = Array.from({length: startingNumSegments}, (v, i) =>
+      this.p.createVector(-i * this.cellWidth(), 0, (Math.floor(cellsPerDimension / 2) - this.snakeIndex) * this.cellWidth()));
     const AXIS_MOVE_ORDERS = [
       [0, 1, 2],
       [0, 2, 1],
@@ -27,13 +33,7 @@ class Snake {
       [2, 1, 0],
     ];
     this.moveOrder = p.random(AXIS_MOVE_ORDERS);
-  }
-
-  setUp(startingNumSegments: number) {
-    this.alive = true;
-    this.direction = this.p.createVector(0, 0, 0);
-    this.segments = Array.from({length: startingNumSegments}, (v, i) =>
-      this.p.createVector(-i * this.cellWidth(), 0, -this.snakeIndex * this.cellWidth()));
+    this.autoDriving = false;
   }
 
   draw(rgb: Number[], drawReferenceStructures: (head, segWidth) => void) {
@@ -51,9 +51,9 @@ class Snake {
     });
   }
 
-  move(autoDriving: boolean, snakes: Snake[], food, collisionCallback: () => void, eatCallback: (pos) => void) {
+  move(snakes: Snake[], food, collisionCallback: () => void, eatCallback: (pos) => void) {
     if (! this.alive) return;
-    if (autoDriving || !this.direction.equals(this.zeroVector)) {
+    if (this.autoDriving || !this.direction.equals(this.zeroVector)) {
       const newHeadPos = p5.Vector.add(this.segments[0], p5.Vector.mult(this.direction, this.cellWidth()));
       if (this.collides(newHeadPos, snakes)) {
         collisionCallback();
