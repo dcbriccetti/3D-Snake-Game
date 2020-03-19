@@ -1,6 +1,6 @@
 // 3D Snake Game
 
-declare const p5;
+// declare const p5;
 
 new p5(p => {
   const STARTING_NUM_SEGMENTS = 3;
@@ -64,18 +64,13 @@ new p5(p => {
   };
 
   p.keyPressed = () => {
-    if (p.key === 'A') {
-      snakes.forEach(s => s.autoDriving = true);
-    } else {
-      snakes.forEach((s, i) => {if (i > 0) s.autoDriving = true;});
-      const requestedDir = keyMappings[p.key];
-      if (requestedDir) {
-        const oppositeOfCurrentDir = p5.Vector.mult(snakes[0].direction, -1);
-        if (!requestedDir.equals(oppositeOfCurrentDir)) {
-          snakes[0].direction = requestedDir;
-          if (!nextMoveTime)
-            nextMoveTime = p.millis();
-        }
+    const requestedDir = keyMappings[p.key];
+    if (requestedDir) {
+      const oppositeOfCurrentDir = p5.Vector.mult(snakes[0].direction, -1);
+      if (!requestedDir.equals(oppositeOfCurrentDir)) {
+        snakes[0].direction = requestedDir;
+        if (!nextMoveTime)
+          nextMoveTime = p.millis();
       }
     }
   };

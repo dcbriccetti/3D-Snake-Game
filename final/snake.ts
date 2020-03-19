@@ -33,7 +33,7 @@ class Snake {
       [2, 1, 0],
     ];
     this.moveOrder = p.random(AXIS_MOVE_ORDERS);
-    this.autoDriving = false;
+    this.autoDriving = snakeIndex > 0;
   }
 
   draw(rgb: Number[], drawReferenceStructures: (head, segWidth) => void) {
