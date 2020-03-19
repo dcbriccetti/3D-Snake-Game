@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Snake 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/addons/p5.sound.min.js"></script>
+    <style type="text/css">
+        body {
+            width: 95%;
+            font-family: sans-serif;
+        }
+        .label {
+            color: black;
+        }
+        #controls {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.3);
+            margin: .3em;
+            padding: .2em;
+        }
+    </style>
+</head>
+<body>
+    <script src="sketch.js"></script>
+    <div id ='controls'>
+        <table>
+            <tr>
+                <td>
+                    <label for="numCells" class="label">Cells</label>
+                </td>
+                <td>
+                    <input id="numCells" type="range" min="5" max="25" step="2">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="manualSpeed" class="label">Speed</label>
+                </td>
+                <td>
+                    <input id="manualSpeed" type="range" min="1" max="50" step="1" value="40">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="autoSpeed" class="label">Auto Speed</label>
+                </td>
+                <td>
+                    <input id="autoSpeed" type="range" min="1" max="50" step="1" value="25">
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
