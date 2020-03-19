@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Snake 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/addons/p5.sound.min.js"></script>
+    <style type="text/css">
+        body {
+            width: 95%;
+            font-family: sans-serif;
+        }
+        .label {
+            color: black;
+        }
+        #controls {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.3);
+            margin: .3em;
+            padding-left: .5em;
+            padding-right: .5em;
+        }
+    </style>
+</head>
+<body>
+    <script src="drawhelper.js"></script>
+    <script src="snake.js"></script>
+    <script src="sketch.js"></script>
+    <div id ='controls'>
+        <h3>3D Snake Game Work in Progress, by <a href="https://davebsoft.com">Dave Briccetti</a></h3>
+        <p>Use the arrow keys for up, down, left, right, and w for away and s for towards. <br/>
+            To start, click in the game area (so your keystrokes are directed there) and press a key.
+        <br/>Hold down shift for a temporary speed boost. Play by youself or add more snakes.</p>
+        <p><a href="https://www.youtube.com/playlist?list=PLBB4Hl2loxIcmqqdFH3TrNfpIZHlyvMMK">Video lessons</a>,
+        <a href="https://github.com/dcbriccetti/3D-Snake-Game">Source code</a></p>
+        <table>
+            <tr>
+                <td>
+                    <label for="numCells" class="label">Cells</label>
+                </td>
+                <td>
+                    <input id="numCells" type="range" min="5" max="25" step="2">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="speed" class="label">Speed</label>
+                </td>
+                <td>
+                    <input id="speed" type="range" min="1" max="50" step="1" value="35">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="numSnakes" class="label">Snakes</label>
+                </td>
+                <td>
+                    <input id="numSnakes" type="range" min="1" max="11" value="1">
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
