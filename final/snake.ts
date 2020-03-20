@@ -51,27 +51,35 @@ class Snake {
     });
   }
 
-  move(snakes: Snake[], food, collisionCallback: () => void, eatCallback: (pos) => void) {
+  move(snakes: Snake[], foodItems, collisionCallback: () => void, eatCallback: (pos) => void) {
     if (! this.alive) return;
     if (this.autoDriving || !this.direction.equals(this.zeroVector)) {
       const newHeadPos = p5.Vector.add(this.segments[0], p5.Vector.mult(this.direction, this.cellWidth()));
       if (this.collides(newHeadPos, snakes)) {
         collisionCallback();
       } else {
-        if (newHeadPos.equals(food))
-          eatCallback(food);
-        else
+        let found = false;
+        foodItems.forEach(f => {
+          if (newHeadPos.equals(f)) {
+            found = true;
+            eatCallback(f);
+          }
+        });
+        if (! found)
           this.segments.pop(); // Discard last
         this.segments.unshift(newHeadPos); // Put new head on front
       }
     }
   }
 
-  autoSetDirection(snakes: Snake[], food) {
+  autoSetDirection(snakes: Snake[], foodItems) {
     if (! this.alive) return;
     const p = this.p;
     const head = this.segments[0];
-    const toFoodAxisDistances = p5.Vector.sub(food, head).array();
+    const nearestFood = this.findNearestFood(foodItems);
+    if (! nearestFood) return;
+
+    const toFoodAxisDistances = p5.Vector.sub(nearestFood, head).array();
     let newDir;
 
     const validDirs = this.validMoveDirections(snakes);
@@ -94,6 +102,12 @@ class Snake {
         this.direction = p.random(validDirs);
       }
     }
+  }
+
+  private findNearestFood(foodItems: any[]) {
+    const head = this.segments[0];
+    return foodItems.length ?
+      foodItems.reduce((accum, cur) => head.dist(cur) < head.dist(accum) ? cur : accum) : undefined;
   }
 
   validMoveDirections(snakes: Snake[]) {

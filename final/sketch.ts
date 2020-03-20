@@ -1,6 +1,7 @@
 // 3D Snake Game
+// Lesson Twelve: Multiple Simultaneous Food Objects
 
-// declare const p5;
+declare const p5;
 
 new p5(p => {
   const STARTING_NUM_SEGMENTS = 3;
@@ -16,12 +17,12 @@ new p5(p => {
   ];
   let cellsPerDimension = 11;
   let msPerMove: number;
-  let food;
+  let foodItems;
   let foodImage;
   let keyMappings;
   let arenaWidth;
   let cellWidth;
-  let nextMoveTime;
+  let nextMoveTime: number;
   let rightmostCellCenter;
   let at;
   let numSnakes: number;
@@ -48,12 +49,18 @@ new p5(p => {
     if (msPastNextMoveTime > 0) {
       snakes.forEach(s => {
         if (s.autoDriving)
-          s.autoSetDirection(snakes, food);
-        s.move(snakes, food, () => s.die(), (foundFood) => food = newFoodPosition())
+          s.autoSetDirection(snakes, foodItems);
+        s.move(snakes, foodItems, () => s.die(),
+          (foundFood) => {
+            foodItems = foodItems.filter(f => ! f.equals(foundFood));
+          });
       });
       const adjustedMs = p.keyIsDown(p.SHIFT) ? msPerMove / SPEEDUP_FACTOR : msPerMove;
       nextMoveTime = p.max(now, now + adjustedMs - msPastNextMoveTime);
     }
+
+    while (foodItems.length < numSnakes / 2)
+      foodItems.push(newFoodPosition());
 
     positionCamera();
     p.background(255);
@@ -141,7 +148,7 @@ new p5(p => {
     function setUpState() {
       snakes = Array.from({length: numSnakes}, (v, i) =>
         new Snake(p, i, arenaWidth, () => cellWidth, cellsPerDimension, STARTING_NUM_SEGMENTS));
-      food = newFoodPosition();
+      foodItems = [];
     }
 
   function newFoodPosition() {
@@ -174,14 +181,17 @@ new p5(p => {
   }
 
   function drawFood() {
-    p.noStroke();
-    p.texture(foodImage);
     const itemWidth = cellWidth * 0.8;
-    at(food.array(), () => p.box(itemWidth));
 
-    p.stroke(255, 0, 0);
-    p.fill(255, 0, 0, 60);
-    drawReferenceStructures(food, itemWidth);
+    foodItems.forEach(food => {
+      p.noStroke();
+      p.texture(foodImage);
+      at(food.array(), () => p.box(itemWidth));
+
+      p.stroke(255, 0, 0);
+      p.fill(255, 0, 0, 60);
+      drawReferenceStructures(food, itemWidth);
+    });
   }
 
   function drawReferenceStructures(pos, objWidth) {
