@@ -1,11 +1,13 @@
-// 3D Snake Program
-// Dave Briccetti
+// 3D Snake Game
+// Lesson Six: Drawing and eating food
 
+const CELLS_PER_DIMENSION = 11;
+const CELLS_RIGHT_OF_CENTER = (CELLS_PER_DIMENSION - 1) / 2;
 const STARTING_NUM_SEGMENTS = 3;
+const MS_PER_MOVE = 1000;
 const SPEEDUP_FACTOR = 3;
-let msPerMove = 1000;
-let cellsPerDimension = 11;
 let food;
+let foodImage;
 let direction;
 let segments;
 let keyMappings;
@@ -13,29 +15,28 @@ let arenaWidth;
 let cellWidth;
 let zeroVector;
 let nextMoveTime;
-let autoDriving = false;
 let rightmostCellCenter;
-let sliderCellsPerDimension;
+
+function preload() {
+  foodImage = loadImage('apple.png');
+}
 
 function setup() {
-  const len = min(windowWidth, windowHeight - 50);
+  const len = min(windowWidth - 10, windowHeight - 50);
   createCanvas(len, len, WEBGL);
   zeroVector = createVector(0, 0, 0);
-  arenaWidth = round(width * 0.5);
-  resizeFromSlider();
+  arenaWidth = round(width * 0.6);
+  cellWidth = round(arenaWidth / CELLS_PER_DIMENSION);
+  rightmostCellCenter = cellWidth * CELLS_RIGHT_OF_CENTER;
   mapKeys();
   setUpState();
-  createControls();
 }
 
 function draw() {
   if (millis() > nextMoveTime) {
-    if (autoDriving)
-      autoSetDirection();
     moveSnake();
-    nextMoveTime += autoDriving ? 0 : keyIsDown(SHIFT) ? msPerMove / SPEEDUP_FACTOR : msPerMove;
+    nextMoveTime += keyIsDown(SHIFT) ? MS_PER_MOVE / SPEEDUP_FACTOR : MS_PER_MOVE;
   }
-
   moveCameraTo(map(sin(frameCount / 50), -1, 1, 0, -arenaWidth * 0.8), -arenaWidth * 0.8);
   background(255);
   smooth();
@@ -43,31 +44,6 @@ function draw() {
   drawSnake();
   drawFood();
 }
-
-function createControls() {
-  sliderCellsPerDimension = select('#numCells');
-  sliderCellsPerDimension.value(cellsPerDimension);
-
-  sliderCellsPerDimension.changed(() => {
-    cellsPerDimension = sliderCellsPerDimension.value();
-    resizeFromSlider();
-    setUpState();
-  });
-  
-  sliderMsPerMove = select('#msPerMove');
-  sliderMsPerMove.value(msPerMove);
-
-  sliderMsPerMove.changed(() => {
-    msPerMove = sliderMsPerMove.value();
-  });
-}
-
-function resizeFromSlider() {
-  cellWidth = round(arenaWidth / cellsPerDimension);
-  rightmostCellCenter = cellWidth * cellsRightOfCenter();
-}
-
-let cellsRightOfCenter = () => (cellsPerDimension - 1) / 2;
 
 function mapKeys() {
   const v = createVector;
@@ -99,30 +75,25 @@ function moveCameraTo(x, y) {
 }
 
 function keyPressed() {
-  if (key === 'a') {
-    if (autoDriving = !autoDriving)
-      nextMoveTime = millis();
-  } else {
-    const requestedDir = keyMappings[key];
-    if (requestedDir) {
-      const oppositeOfCurrentDir = p5.Vector.mult(direction, -1);
-      if (!requestedDir.equals(oppositeOfCurrentDir)) {
-        direction = requestedDir;
-        if (!nextMoveTime)
-          nextMoveTime = millis();
-      }
+  const requestedDir = keyMappings[key];
+  if (requestedDir) {
+    const oppositeOfCurrentDir = p5.Vector.mult(direction, -1);
+    if (!requestedDir.equals(oppositeOfCurrentDir)) {
+      direction = requestedDir;
+      if (!nextMoveTime)
+        nextMoveTime = millis();
     }
   }
 }
 
 function newFoodPosition() {
-  const m = cellsRightOfCenter();
+  const m = CELLS_RIGHT_OF_CENTER;
   const c = () => round(random(-m, m)) * cellWidth;
   return createVector(c(), c(), c());
 }
 
 function moveSnake() {
-  if (autoDriving || !direction.equals(zeroVector)) {
+  if (!direction.equals(zeroVector)) {
     const newHeadPos = p5.Vector.add(segments[0], p5.Vector.mult(direction, cellWidth));
     if (newPositionWouldLeaveArena(newHeadPos)) {
       setUpState();
@@ -138,15 +109,6 @@ function moveSnake() {
 
 function newPositionWouldLeaveArena(pos) {
   return !pos.array().every(coord => abs(coord) < arenaWidth / 2);
-}
-
-function autoSetDirection() {
-  const to = p5.Vector.sub(segments[0], food).array();
-  const toAbs = to.map(n => abs(n));
-  const greatestDistanceAxis = toAbs.indexOf(max(toAbs));
-  const a = [0, 0, 0];
-  a[greatestDistanceAxis] = to[greatestDistanceAxis] > 0 ? -1 : 1;
-  direction = createVector(...a);
 }
 
 function drawArena() {
@@ -191,10 +153,10 @@ function drawArena() {
 }
 
 function drawSnake() {
+  const segmentWidth = cellWidth * 0.9;
   segments.forEach(segment => {
     stroke('gray');
     fill(0, 255, 0, 70);
-    const segmentWidth = cellWidth * 0.9;
     at(...segment.array(), () => box(segmentWidth));
 
     stroke(0, 255, 0);
@@ -204,29 +166,30 @@ function drawSnake() {
 }
 
 function drawFood() {
-  stroke('black');
-  fill('red');
-  at(...food.array(), () => box(cellWidth / 3));
+  noStroke();
+  texture(foodImage);
+  const itemWidth = cellWidth * 0.8;
+  at(...food.array(), () => box(itemWidth));
 
   stroke(255, 0, 0);
   fill(255, 0, 0, 60);
-  drawReferenceStructures(food, cellWidth / 2);
+  drawReferenceStructures(food, itemWidth);
 }
 
 function drawReferenceStructures(pos, objWidth) {
-  const half = arenaWidth / 2;
-  //   x₁     y₁     z₁     x₂     y₂     z₂
-  line(pos.x, pos.y, pos.z, half,  pos.y, pos.z);
-  line(pos.x, pos.y, pos.z, pos.x, half,  pos.z);
-  line(pos.x, pos.y, -half, pos.x, pos.y, pos.z);
+  const l = arenaWidth / 2; // Largest coordinate value
+  const s = -l; // Smallest
+  const {x, y, z} = pos;
+  line(x, y, z,  l, y, z);
+  line(x, y, z,  x, l, z);
+  line(x, y, z,  x, y, s);
 
   noStroke();
   const w = objWidth;
   const f = 0.1; // Length on flat dimension
-  // x₁     y₁     z₁
-  at(half,  pos.y, pos.z, () => box(f, w, w));
-  at(pos.x, half,  pos.z, () => box(w, f, w));
-  at(pos.x, pos.y, -half, () => box(w, w, f));
+  at(l, y, z, () => box(f, w, w));
+  at(x, l, z, () => box(w, f, w));
+  at(x, y, s, () => box(w, w, f));
 }
 
 function at(x, y, z, fn) {
