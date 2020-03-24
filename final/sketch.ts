@@ -1,5 +1,4 @@
 // 3D Snake Game
-// Lesson Twelve: Multiple Simultaneous Food Objects
 
 declare const p5;
 
@@ -27,6 +26,9 @@ new p5(p => {
   let at;
   let numSnakes: number;
   let snakes: Snake[];
+  let sliderSpeed;
+  let sliderCellsPerDimension;
+  let sliderNumSnakes;
 
   p.preload = () => {
     foodImage = p.loadImage('apple.png');
@@ -90,7 +92,7 @@ new p5(p => {
   }
 
   function createControls() {
-    const sliderCellsPerDimension = p.select('#numCells');
+    sliderCellsPerDimension = p.select('#numCells');
     sliderCellsPerDimension.value(cellsPerDimension);
     sliderCellsPerDimension.changed(() => {
       cellsPerDimension = sliderCellsPerDimension.value();
@@ -98,16 +100,16 @@ new p5(p => {
       setUpState();
     });
 
-    const sliderManualSpeed = p.select('#speed');
+    sliderSpeed = p.select('#speed');
 
     function setMsPerMoveFromSlider() {
-      msPerMove = p.map(sliderManualSpeed.value(), 1, 50, 3000, 0);
+      msPerMove = p.map(sliderSpeed.value(), 1, 50, 3000, 0);
     }
 
-    sliderManualSpeed.changed(() => setMsPerMoveFromSlider());
+    sliderSpeed.changed(() => setMsPerMoveFromSlider());
     setMsPerMoveFromSlider();
 
-    const sliderNumSnakes = p.select('#numSnakes');
+    sliderNumSnakes = p.select('#numSnakes');
 
     function setNumSnakesFromAutoSlider() {
       numSnakes = sliderNumSnakes.value();
@@ -116,6 +118,18 @@ new p5(p => {
 
     sliderNumSnakes.changed(() => setNumSnakesFromAutoSlider());
     setNumSnakesFromAutoSlider();
+
+    const buttonDemo = p.select('#demo');
+    buttonDemo.mousePressed(startDemo);
+  }
+
+  function startDemo(): void {
+    sliderSpeed.value(50);
+    sliderCellsPerDimension.value(15);
+    sliderNumSnakes.value(11);
+    snakes[0].autoDriving = true;
+    nextMoveTime = p.millis();
+    // todo don't hardcode these values
   }
 
   function resizeFromSlider() {
