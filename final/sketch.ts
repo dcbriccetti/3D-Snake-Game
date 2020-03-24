@@ -26,9 +26,6 @@ new p5(p => {
   let at;
   let numSnakes: number;
   let snakes: Snake[];
-  let sliderSpeed;
-  let sliderCellsPerDimension;
-  let sliderNumSnakes;
 
   p.preload = () => {
     foodImage = p.loadImage('apple.png');
@@ -92,15 +89,18 @@ new p5(p => {
   }
 
   function createControls() {
-    sliderCellsPerDimension = p.select('#numCells');
+    const sliderCellsPerDimension = p.select('#numCells');
     sliderCellsPerDimension.value(cellsPerDimension);
-    sliderCellsPerDimension.changed(() => {
+
+    function changeCellsPerDim() {
       cellsPerDimension = sliderCellsPerDimension.value();
       resizeFromSlider();
       setUpState();
-    });
+    }
 
-    sliderSpeed = p.select('#speed');
+    sliderCellsPerDimension.changed(changeCellsPerDim);
+
+    const sliderSpeed = p.select('#speed');
 
     function setMsPerMoveFromSlider() {
       msPerMove = p.map(sliderSpeed.value(), 1, 50, 3000, 0);
@@ -109,7 +109,7 @@ new p5(p => {
     sliderSpeed.changed(() => setMsPerMoveFromSlider());
     setMsPerMoveFromSlider();
 
-    sliderNumSnakes = p.select('#numSnakes');
+    const sliderNumSnakes = p.select('#numSnakes');
 
     function setNumSnakesFromAutoSlider() {
       numSnakes = sliderNumSnakes.value();
@@ -121,16 +121,19 @@ new p5(p => {
 
     const buttonDemo = p.select('#demo');
     buttonDemo.mousePressed(startDemo);
+
+    function startDemo(): void {
+      sliderSpeed.value(50); // todo don't hardcode these values
+      setMsPerMoveFromSlider();
+      sliderCellsPerDimension.value(15);
+      changeCellsPerDim();
+      sliderNumSnakes.value(11);
+      setNumSnakesFromAutoSlider();
+      snakes[0].autoDriving = true;
+      nextMoveTime = p.millis();
+    }
   }
 
-  function startDemo(): void {
-    sliderSpeed.value(50);
-    sliderCellsPerDimension.value(15);
-    sliderNumSnakes.value(11);
-    snakes[0].autoDriving = true;
-    nextMoveTime = p.millis();
-    // todo don't hardcode these values
-  }
 
   function resizeFromSlider() {
     cellWidth = p.round(arenaWidth / cellsPerDimension);
