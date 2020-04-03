@@ -180,13 +180,8 @@ new p5(p => {
     const s = -l;
     const q = p.TAU / 4;
 
-    [
-      [[0, 0, s], 0, 0],
-      [[l, 0, 0], 0, q],
-      [[0, l, 0], q, 0],
-    ].forEach(xf => {
-      const [pos, xRot, yRot] = xf;
-      at(<Number[]>pos, () => {
+    function drawWall(x: number, y: number, z: number, xRot: number, yRot: number): void {
+      at([x, y, z], () => {
         p.rotateX(xRot);
         p.rotateY(yRot);
         for (let v = s; v <= l; v += cellWidth) {
@@ -194,7 +189,16 @@ new p5(p => {
           p.line(v, s, 0, v, l, 0);
         }
       });
-    });
+    }
+
+
+    const wallTransformations = [
+      // x, y, z, xRot, yRot
+      [0, 0, s, 0, 0],
+      [l, 0, 0, 0, q],
+      [0, l, 0, q, 0],
+    ];
+    wallTransformations.forEach(wt => drawWall(wt[0], wt[1], wt[2], wt[3], wt[4]));
   }
 
   function drawFood() {
