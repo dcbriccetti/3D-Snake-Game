@@ -1,5 +1,4 @@
 // 3D Snake Game
-// Lesson Twelve: Multiple Simultaneous Food Objects
 
 declare const p5;
 
@@ -92,19 +91,22 @@ new p5(p => {
   function createControls() {
     const sliderCellsPerDimension = p.select('#numCells');
     sliderCellsPerDimension.value(cellsPerDimension);
-    sliderCellsPerDimension.changed(() => {
+
+    function changeCellsPerDim() {
       cellsPerDimension = sliderCellsPerDimension.value();
       resizeFromSlider();
       setUpState();
-    });
-
-    const sliderManualSpeed = p.select('#speed');
-
-    function setMsPerMoveFromSlider() {
-      msPerMove = p.map(sliderManualSpeed.value(), 1, 50, 3000, 0);
     }
 
-    sliderManualSpeed.changed(() => setMsPerMoveFromSlider());
+    sliderCellsPerDimension.changed(changeCellsPerDim);
+
+    const sliderSpeed = p.select('#speed');
+
+    function setMsPerMoveFromSlider() {
+      msPerMove = p.map(sliderSpeed.value(), 1, 50, 3000, 0);
+    }
+
+    sliderSpeed.changed(() => setMsPerMoveFromSlider());
     setMsPerMoveFromSlider();
 
     const sliderNumSnakes = p.select('#numSnakes');
@@ -116,7 +118,22 @@ new p5(p => {
 
     sliderNumSnakes.changed(() => setNumSnakesFromAutoSlider());
     setNumSnakesFromAutoSlider();
+
+    const buttonDemo = p.select('#demo');
+    buttonDemo.mousePressed(startDemo);
+
+    function startDemo(): void {
+      sliderSpeed.value(50); // todo don't hardcode these values
+      setMsPerMoveFromSlider();
+      sliderCellsPerDimension.value(15);
+      changeCellsPerDim();
+      sliderNumSnakes.value(11);
+      setNumSnakesFromAutoSlider();
+      snakes[0].autoDriving = true;
+      nextMoveTime = p.millis();
+    }
   }
+
 
   function resizeFromSlider() {
     cellWidth = p.round(arenaWidth / cellsPerDimension);
@@ -163,13 +180,8 @@ new p5(p => {
     const s = -l;
     const q = p.TAU / 4;
 
-    [
-      [[0, 0, s], 0, 0],
-      [[l, 0, 0], 0, q],
-      [[0, l, 0], q, 0],
-    ].forEach(xf => {
-      const [pos, xRot, yRot] = xf;
-      at(<Number[]>pos, () => {
+    function drawWall(x: number, y: number, z: number, xRot: number, yRot: number): void {
+      at([x, y, z], () => {
         p.rotateX(xRot);
         p.rotateY(yRot);
         for (let v = s; v <= l; v += cellWidth) {
@@ -177,7 +189,16 @@ new p5(p => {
           p.line(v, s, 0, v, l, 0);
         }
       });
-    });
+    }
+
+
+    const wallTransformations = [
+      // x, y, z, xRot, yRot
+      [0, 0, s, 0, 0],
+      [l, 0, 0, 0, q],
+      [0, l, 0, q, 0],
+    ];
+    wallTransformations.forEach(wt => drawWall(wt[0], wt[1], wt[2], wt[3], wt[4]));
   }
 
   function drawFood() {
