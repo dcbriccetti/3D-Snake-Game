@@ -70,6 +70,7 @@ new p5(p => {
   };
 
   p.keyPressed = () => {
+    fadeOutControls();
     const requestedDir = keyMappings[p.key];
     if (requestedDir) {
       const oppositeOfCurrentDir = p5.Vector.mult(snakes[0].direction, -1);
@@ -88,7 +89,19 @@ new p5(p => {
     p.camera(camX, camY, camZ,  0, 0, 0,  0, 1, 0);
   }
 
+  function fadeInControls() {
+    $(".fadeable-controls").fadeIn(500);
+  }
+
+  function fadeOutControls() {
+    $(".fadeable-controls").fadeOut(2000);
+  }
+
   function createControls() {
+    $("#controls").mouseenter((e) => {
+      fadeInControls();
+    });
+
     const sliderCellsPerDimension = p.select('#numCells');
     sliderCellsPerDimension.value(cellsPerDimension);
 
@@ -123,6 +136,7 @@ new p5(p => {
     buttonDemo.mousePressed(startDemo);
 
     function startDemo(): void {
+      fadeOutControls();
       sliderSpeed.value(50); // todo don't hardcode these values
       setMsPerMoveFromSlider();
       sliderCellsPerDimension.value(15);

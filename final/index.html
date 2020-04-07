@@ -5,14 +5,17 @@
     <title>Snake 3D</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/addons/p5.sound.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <style type="text/css">
         body {
             width: 95%;
             font-family: sans-serif;
         }
+
         .label {
             color: black;
         }
+
         #controls {
             position: absolute;
             background-color: rgba(150, 150, 150, 0.3);
@@ -23,14 +26,15 @@
     </style>
 </head>
 <body>
-    <script src="app.js"></script>
-    <div id ='controls'>
-        <h3>3D Snake Game Work in Progress, by <a href="https://davebsoft.com">Dave Briccetti</a></h3>
+<script src="app.js"></script>
+<div id='controls'>
+    <h3>3D Snake Game Work in Progress, by <a href="https://davebsoft.com">Dave Briccetti</a></h3>
+    <div class='fadeable-controls'>
         <p>Use the arrow keys for up, down, left, right, and w for away and s for towards. <br/>
             To start, click in the game area (so your keystrokes are directed there) and press a key.
-        <br/>Hold down shift for a temporary speed boost. Play by youself or add more snakes.</p>
+            <br/>Hold down shift for a temporary speed boost. Play by youself or add more snakes.</p>
         <p><a href="https://www.youtube.com/playlist?list=PLBB4Hl2loxIcmqqdFH3TrNfpIZHlyvMMK">Video lessons</a>,
-        <a href="https://github.com/dcbriccetti/3D-Snake-Game">Source code</a></p>
+            <a href="https://github.com/dcbriccetti/3D-Snake-Game">Source code</a></p>
         <table>
             <tr>
                 <td>
@@ -63,5 +67,6 @@
             </tr>
         </table>
     </div>
+</div>
 </body>
 </html>
